@@ -2,8 +2,8 @@ from typing import Dict
 
 from httpx import Client
 
-from core.logger import log_api_response, logger
 from core.agents import generate_random_user_agent
+from core.logger import log_api_response, logger
 from utils import get_user_data
 
 
@@ -70,13 +70,13 @@ class GameApiClient:
         return self._request("GET", "/api/user/get")
 
     def get_shield(self):
-        return self._request("POST", "/api/boost/buy", {"id": 2, "method": "coin"})
+        return self._request("POST", "/api/boost/buy", {"id": 2, "method": "free"})
 
     def get_shield_immunity(self):
-        return self._request("POST", "/api/boost/buy", {"id": 3, "method": "coin"})
+        return self._request("POST", "/api/boost/buy", {"id": 3, "method": "free"})
 
     def get_fuel(self):
-        return self._request("POST", "/api/boost/buy", {"id": 1, "method": "coin"})
+        return self._request("POST", "/api/boost/buy", {"id": 1, "method": "free"})
 
     def get_roulette(self):
         return self._request("POST", "/api/roulette/buy", {"method": "free"})
