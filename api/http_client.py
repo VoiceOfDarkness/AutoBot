@@ -2,9 +2,9 @@ from typing import Dict
 
 from httpx import Client
 
+from core.logger import log_api_response, logger
+from core.agents import generate_random_user_agent
 from utils import get_user_data
-
-from core.logger import logger, log_api_response
 
 
 class GameApiClient:
@@ -21,7 +21,7 @@ class GameApiClient:
             "sec-ch-ua": '"Android WebView";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             "sec-ch-ua-mobile": "?1",
             "sec-ch-ua-platform": '"Android"',
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.260 Mobile Safari/537.36 Telegram-Android/11.6.1 (Xiaomi M2101K6G; Android 14; SDK 34; HIGH)",
+            "user-agent": generate_random_user_agent(),
             "accept": "application/json, text/plain, */*",
             "content-type": "application/x-www-form-urlencoded",
             "x-requested-with": "org.telegram.messenger",
@@ -79,13 +79,16 @@ class GameApiClient:
         return self._request("POST", "/api/boost/buy", {"id": 1, "method": "coin"})
 
     def get_roulette(self):
-        return self._request("POST", "/api/roulette/buy", {"method": "coin"})
+        return self._request("POST", "/api/roulette/buy", {"method": "free"})
 
     def claim(self):
         return self._request("POST", "/api/game/claim")
 
     def get_daily(self):
-        return self._request("POST", "/api/game/daily_claim", {"method": "ordinary"})
+        return self._request("POST", "/api/user/daily_claim", {"method": "ordinary"})
+
+    def get_onclick_task(self):
+        return self._request("POST", "/api/tasks/onclick")
 
     def get_tasks(self):
-        return self._request("POST", "/api/tasks/onclick")
+        return self._request("POST", "/api/tasks/get", {"category": "sponsors"})
