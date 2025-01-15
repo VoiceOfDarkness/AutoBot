@@ -61,7 +61,7 @@ class GameBot:
         times = {
             "⏰ Last Claim": self.user_data.get("claimed_last"),
             "🔄 Next Daily": self.user_data.get("daily_next_at"),
-            "⛽ Last refueling": self.user_data.get("fuel_free_after_at"),
+            "⛽ Last refueling": self.user_data.get("fuel_last_at"),
             "🛡 Shield immunity up to": self.user_data.get("shield_immunity_at"),
             "🛡 Shield is active until": self.user_data.get("shield_free_after_at"),
             "🎰 Spin after": self.user_data.get("spin_after_at"),
@@ -176,7 +176,7 @@ class GameBot:
                     execute()
                     self.status_message = f"Completed successfully: {action_name}."
                     self._add_log(f"Successfully obtained {action_name}", "success")
-                    sleep(5)
+                    sleep(30)
             except Exception as e:
                 error_message = f"Error while executing {action_name}: {e}"
                 self._add_log(error_message, "error")
@@ -202,7 +202,7 @@ class GameBot:
     def _claim(self):
         response = self.client.claim()
         self.user_data = response["user"]
-        self._add_log("Claimed rewards successfully", "success")
+        self._add_log("Claimed balance successfully", "success")
 
     def _daily(self):
         response = self.client.get_daily()

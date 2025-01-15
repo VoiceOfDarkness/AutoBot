@@ -75,7 +75,7 @@ class UserState:
             shield_immunity_at=data.get("shield_immunity_at"),
             shield=int(data["shield"]),
             daily_next_at=data.get("daily_next_at"),
-            fuel_last_at=data.get("fuel_free_after_at"),
+            fuel_last_at=data.get("fuel_last_at"),
             shield_ended_at=data.get("shield_free_after_at"),
             spin_after_at=data.get("spin_after_at"),
             task=TaskState.from_response(task_data),

@@ -76,7 +76,7 @@ class GameApiClient:
         return self._request("POST", "/api/boost/buy", {"id": 3, "method": "free"})
 
     def get_fuel(self):
-        return self._request("POST", "/api/boost/buy", {"id": 1, "method": "free"})
+        return self._request("POST", "/api/boost/buy", {"id": 1, "method": "coin"})
 
     def get_roulette(self):
         return self._request("POST", "/api/roulette/buy", {"method": "free"})
