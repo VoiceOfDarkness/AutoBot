@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 
 
 @dataclass
@@ -9,7 +9,7 @@ class TaskState:
     last_completed_at: Optional[str]
 
     @classmethod
-    def from_response(cls, data: dict) -> "TaskState":
+    def from_response(cls, data: List[dict]) -> "TaskState":
         if not data:
             return cls(
                 completed_task=False,
@@ -17,16 +17,19 @@ class TaskState:
             )
         return cls(
             completed_task=True,
-            last_completed_at=data["locale_time"],
+            last_completed_at=data[0]["locale_time"],
         )
 
     def is_ready(self, current_time: datetime) -> bool:
         if self.completed_task:
             return False
-        task_completed_at = datetime.fromisoformat(self.last_completed_at) + timedelta(
-            hours=1
-        )
-        return current_time > task_completed_at
+        if self.last_completed_at:
+            task_completed_at = datetime.fromisoformat(
+                self.last_completed_at
+            ) + timedelta(hours=1)
+            return current_time > task_completed_at
+
+        return True
 
 
 @dataclass
@@ -43,7 +46,7 @@ class UserState:
     task: TaskState
 
     @classmethod
-    def from_response(cls, data: dict, task_data: dict) -> "UserState":
+    def from_response(cls, data: dict, task_data: List) -> "UserState":
         return cls(
             balance=float(data["balance"]),
             claimed_last_at=data.get("claimed_last"),

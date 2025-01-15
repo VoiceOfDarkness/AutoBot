@@ -35,22 +35,8 @@ class GameBot:
         self.retry_delays = [5, 10, 30, 60]
         self.status_message = "Waiting..."
         self.user_data = {}
-        self.task_data = {}
         self.logs = deque(maxlen=10)  # last 10 logs
-        self._init_user_data()
-
-    def _init_user_data(self):
-        try:
-            user_data = self.client.get_user()
-            task_data = self.client.get_tasks()
-            if user_data and "user" in user_data:
-                self.user_data = user_data["user"]
-                self.task_data = task_data["listCompleted"][0]
-                self._add_log("System initialized successfully", "success")
-            else:
-                self._add_log("Failed to initialize user data", "error")
-        except Exception as e:
-            self._add_log(f"Initialization error: {str(e)}", "error")
+        self._add_log("System initialized", "info")
 
     def _add_log(self, message: str, level: str = "info"):
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -122,8 +108,27 @@ class GameBot:
         return Panel(main_table, title="[title]🎮 GameBot Status[/title]", expand=False)
 
     def run(self):
-        self.running = True
-        self._add_log("GameBot is starting", "info")
+        try:
+            user_data = self.client.get_user()
+            if not user_data or "user" not in user_data:
+                self._add_log("Failed to initialize user data", "error")
+                return
+
+            self.user_data = user_data["user"]
+
+            if self.user_data["tech_work"]:
+                self._add_log("Tech work is active. Bot is disabled", "error")
+                console.print(
+                    Panel("Tech work is active. Bot is disabled", style="error")
+                )
+                return
+
+            self.running = True
+            self._add_log("GameBot is starting", "success")
+
+        except Exception as e:
+            self._add_log(f"Initialization error: {str(e)}", "error")
+            return
 
         with Live(self._generate_status_table(), refresh_per_second=1) as live:
             while self.running:
@@ -138,19 +143,9 @@ class GameBot:
 
     def _process_cycle(self):
         try:
-            user_data = self.client.get_user()
             task_data = self.client.get_tasks()
-            if not user_data or "user" not in user_data:
-                raise ValueError("Incorrect response from API")
-
-            self.user_data = user_data["user"]
-            self.task_data = task_data["listCompleted"][0]
-
-            state = UserState.from_response(
-                user_data["user"], task_data["listCompleted"][0]
-            )
+            state = UserState.from_response(self.user_data, task_data["listCompleted"])
             current_time = datetime.now()
-
             self._process_actions(state, current_time)
 
         except Exception as e:
@@ -210,27 +205,33 @@ class GameBot:
         self._add_log("Claimed rewards successfully", "success")
 
     def _daily(self):
-        self.client.get_daily()
+        response = self.client.get_daily()
+        self.user_data = response["user"]
         self._add_log("Collected daily reward", "success")
 
     def _get_fuel(self):
-        self.client.get_fuel()
+        response = self.client.get_fuel()
+        self.user_data = response["user"]
         self._add_log("Refueled successfully", "success")
 
     def _get_shield(self):
-        self.client.get_shield()
+        response = self.client.get_shield()
+        self.user_data = response["user"]
         self._add_log("Shield obtained", "success")
 
     def _get_shield_immunity(self):
-        self.client.get_shield_immunity()
+        response = self.client.get_shield_immunity()
+        self.user_data = response["user"]
         self._add_log("Shield immunity obtained", "success")
 
     def _get_task_adv(self):
-        self.client.get_onclick_task()
+        response = self.client.get_onclick_task()
+        self.user_data = response["user"]
         self._add_log("Started task advertisement", "info")
         sleep(10)
         self._add_log("Completed task advertisement", "success")
 
     def _get_roulette(self):
-        self.client.get_roulette()
+        response = self.client.get_roulette()
+        self.user_data = response["user"]
         self._add_log("Spin completed", "success")
