@@ -176,7 +176,7 @@ class GameBot:
                     execute()
                     self.status_message = f"Completed successfully: {action_name}."
                     self._add_log(f"Successfully obtained {action_name}", "success")
-                    sleep(30)
+                    sleep(5)
             except Exception as e:
                 error_message = f"Error while executing {action_name}: {e}"
                 self._add_log(error_message, "error")
