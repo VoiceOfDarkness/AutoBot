@@ -1,6 +1,26 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional, List
+from enum import Enum
+
+
+class FuelLevel(Enum):
+    LEVEL_1 = (1, 30)
+    LEVEL_2 = (2, 60)
+    LEVEL_3 = (3, 90)
+    LEVEL_4 = (4, 120)
+    LEVEL_5 = (5, 150)
+
+    def __init__(self, level: int, delay: int):
+        self.level = level
+        self.delay = delay
+
+    @classmethod
+    def from_level(cls, level: int) -> "FuelLevel":
+        for fuel_level in cls:
+            if fuel_level.level == level:
+                return fuel_level
+        return max(cls, key=lambda x: x.level)
 
 
 @dataclass
@@ -28,13 +48,13 @@ class TaskState:
                 self.last_completed_at
             ) + timedelta(hours=1)
             return current_time > task_completed_at
-
         return True
 
 
 @dataclass
 class UserState:
     balance: float
+    level_fuel: int
     claimed_last_at: Optional[str]
     shield: int
     shield_active: bool
@@ -49,6 +69,7 @@ class UserState:
     def from_response(cls, data: dict, task_data: List) -> "UserState":
         return cls(
             balance=float(data["balance"]),
+            level_fuel=int(data["level_fuel"]),
             claimed_last_at=data.get("claimed_last"),
             shield_active=data.get("shield_active"),
             shield_immunity_at=data.get("shield_immunity_at"),
@@ -59,6 +80,21 @@ class UserState:
             spin_after_at=data.get("spin_after_at"),
             task=TaskState.from_response(task_data),
         )
+
+    def _get_fuel_delay(self) -> int:
+        fuel_level = FuelLevel.from_level(self.level_fuel)
+        return fuel_level.delay
+
+    def should_get_fuel(self, current_time: datetime) -> bool:
+        if not self.fuel_last_at:
+            return True
+
+        delay_minutes = self._get_fuel_delay()
+        next_fuel_time = datetime.fromisoformat(self.fuel_last_at) + timedelta(
+            minutes=delay_minutes
+        )
+
+        return current_time > next_fuel_time
 
     def should_claim_daily(self, current_time: datetime) -> bool:
         if not self.daily_next_at:
@@ -72,15 +108,9 @@ class UserState:
         if not self.claimed_last_at:
             return True
         next_claim_time = datetime.fromisoformat(self.claimed_last_at) + timedelta(
-            hours=1, minutes=30
+            hours=1, minutes=15
         )
         return current_time > next_claim_time
-
-    def should_get_fuel(self, current_time: datetime) -> bool:
-        if not self.fuel_last_at:
-            return True
-        next_fuel_time = datetime.fromisoformat(self.fuel_last_at) + timedelta(hours=2)
-        return current_time > next_fuel_time and self.balance > 10
 
     def should_get_shield(self, current_time: datetime) -> bool:
         if not self.shield_ended_at:

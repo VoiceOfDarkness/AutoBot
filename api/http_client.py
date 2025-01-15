@@ -70,7 +70,7 @@ class GameApiClient:
         return self._request("GET", "/api/user/get")
 
     def get_shield(self):
-        return self._request("POST", "/api/boost/buy", {"id": 2, "method": "free"})
+        return self._request("POST", "/api/boost/buy", {"id": 2, "method": "coin"})
 
     def get_shield_immunity(self):
         return self._request("POST", "/api/boost/buy", {"id": 3, "method": "free"})
