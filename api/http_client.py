@@ -82,7 +82,7 @@ class GameApiClient:
         return self._request("POST", "/api/roulette/buy", {"method": "free"})
 
     def claim(self):
-        return self._request("POST", "/api/game/claim")
+        return self._request("POST", "/api/game/claiming")
 
     def get_daily(self):
         return self._request("POST", "/api/user/daily_claim", {"method": "ordinary"})
